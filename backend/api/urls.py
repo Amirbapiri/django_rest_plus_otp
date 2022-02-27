@@ -1,7 +1,5 @@
-from django.urls import path
-
-from api.views import get_products
+from django.urls import path, include
 
 urlpatterns = [
-    path("products/all/", get_products, name="all_products"),
+    path("products/", include(("products.urls", "products"), namespace="products")),
 ]
