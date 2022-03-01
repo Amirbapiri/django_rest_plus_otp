@@ -1,8 +1,14 @@
-from rest_framework.generics import RetrieveAPIView
+from rest_framework.generics import RetrieveAPIView, CreateAPIView
 
 from api.serializers import ProductSerializer
 
 from .models import Product
+
+
+class ProductCreateAPIView(CreateAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    permission_classes = []
 
 
 class ProductDetailAPIView(RetrieveAPIView):
