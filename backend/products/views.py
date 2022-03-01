@@ -1,4 +1,9 @@
-from rest_framework.generics import RetrieveAPIView, CreateAPIView, ListCreateAPIView
+from rest_framework.generics import (
+    RetrieveAPIView,
+    ListCreateAPIView,
+    UpdateAPIView,
+    DestroyAPIView,
+)
 
 from api.serializers import ProductSerializer
 
@@ -42,3 +47,26 @@ class ProductDetailAPIView(RetrieveAPIView):
         qs = super().get_queryset()
         qs = qs.filter(pk=self.kwargs.get("pk"))
         return qs
+
+
+class ProductUpdateAPIView(UpdateAPIView):
+    serializer_class = ProductSerializer
+    queryset = Product.objects.all()
+    permission_classes = []
+
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        if not instance.content:
+            instance.content = instance.title
+            instance.save()
+        return instance
+
+
+class ProductDeleteAPIView(DestroyAPIView):
+    serializer_class = ProductSerializer
+    queryset = Product.objects.all()
+    permission_classes = []
+
+    def perform_destory(self, instance):
+        # Do whatever you want with the instance that is going to be removed.
+        super().perform_destroy(instance)
