@@ -3,11 +3,41 @@ from rest_framework.generics import (
     ListCreateAPIView,
     UpdateAPIView,
     DestroyAPIView,
+    mixins,
+    GenericAPIView,
 )
 
 from api.serializers import ProductSerializer
 
 from .models import Product
+
+
+class ProductMixinView(mixins.ListModelMixin, GenericAPIView):
+    """
+    It is similar to ListAPIView. Here purpose is to illustrate that we can
+    create our own custom generic thanks to mixins.
+    """
+
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+
+class ProductListDetailView(
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    GenericAPIView,
+):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+
+    def get(self, request, *args, **kwargs):
+        pk = kwargs.get("pk")
+        if pk is not None:
+            return self.retrieve(request, *args, **kwargs)
+        return self.list(request, *args, **kwargs)
 
 
 class ProductCreateAPIView(ListCreateAPIView):
