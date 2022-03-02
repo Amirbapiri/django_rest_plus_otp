@@ -89,7 +89,7 @@ class ProductDetailAPIView(RetrieveAPIView):
 class ProductUpdateAPIView(UpdateAPIView):
     serializer_class = ProductSerializer
     queryset = Product.objects.all()
-    permission_classes = []
+    permission_classes = [permissions.IsAdminUser, IsStaffEditorPermissions]
 
     def perform_update(self, serializer):
         instance = serializer.save()
@@ -102,7 +102,7 @@ class ProductUpdateAPIView(UpdateAPIView):
 class ProductDeleteAPIView(DestroyAPIView):
     serializer_class = ProductSerializer
     queryset = Product.objects.all()
-    permission_classes = []
+    permission_classes = [permissions.IsAdminUser, IsStaffEditorPermissions]
 
     def perform_destory(self, instance):
         # Do whatever you want with the instance that is going to be removed.
