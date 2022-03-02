@@ -1,3 +1,4 @@
+from rest_framework import permissions, authentication
 from rest_framework.generics import (
     RetrieveAPIView,
     ListCreateAPIView,
@@ -44,7 +45,11 @@ class ProductListDetailView(
 class ProductListCreateAPIView(ListCreateAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    permission_classes = [IsStaffEditorPermissions]
+    permission_classes = [permissions.IsAdminUser, IsStaffEditorPermissions]
+    authentication_classes = [
+        authentication.SessionAuthentication,
+        authentication.TokenAuthentication,
+    ]
 
     def perform_create(self, serializer):
         """
