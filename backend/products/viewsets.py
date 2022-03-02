@@ -33,3 +33,7 @@ class ProductGenericViewSet(
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     lookup_fields = "pk"
+
+
+product_viewset_list = ProductGenericViewSet.as_view({"get": "list"})
+product_viewset_detail = ProductGenericViewSet.as_view({"get": "retrieve"})
