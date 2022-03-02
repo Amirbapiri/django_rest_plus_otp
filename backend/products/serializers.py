@@ -5,10 +5,12 @@ from products.models import Product
 
 class ProductSerializer(serializers.ModelSerializer):
     discount = serializers.SerializerMethodField(read_only=True)
+    url = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Product
         fields = [
+            "url",
             "title",
             "content",
             "price",
@@ -21,3 +23,6 @@ class ProductSerializer(serializers.ModelSerializer):
         if obj.discount():
             return obj.discount()
         return "NO COUPON"
+
+    def get_url(self, obj):
+        return f"/api/products/{obj.id}"
