@@ -8,7 +8,7 @@ from rest_framework.generics import (
     GenericAPIView,
 )
 
-from api.serializers import ProductSerializer
+from .serializers import ProductSerializer
 from api.authentication import TokenAuthentication
 from api.mixins import StaffEditorPermissionMixin
 
