@@ -8,6 +8,7 @@ from rest_framework.generics import (
 )
 
 from api.serializers import ProductSerializer
+from products.permissions import IsStaffEditorPermissions
 
 from .models import Product
 
@@ -40,10 +41,10 @@ class ProductListDetailView(
         return self.list(request, *args, **kwargs)
 
 
-class ProductCreateAPIView(ListCreateAPIView):
+class ProductListCreateAPIView(ListCreateAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    permission_classes = []
+    permission_classes = [IsStaffEditorPermissions]
 
     def perform_create(self, serializer):
         """
