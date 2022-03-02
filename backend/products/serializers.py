@@ -6,12 +6,16 @@ from products.models import Product
 
 class ProductSerializer(serializers.ModelSerializer):
     discount = serializers.SerializerMethodField(read_only=True)
-    url = serializers.SerializerMethodField(read_only=True)
+    edit_url = serializers.SerializerMethodField(read_only=True)
+    url = serializers.HyperlinkedIdentityField(
+        view_name="api:products:product_detail", lookup_field="pk"
+    )
 
     class Meta:
         model = Product
         fields = [
             "url",
+            "edit_url",
             "title",
             "content",
             "price",
@@ -25,10 +29,12 @@ class ProductSerializer(serializers.ModelSerializer):
             return obj.discount()
         return "NO COUPON"
 
-    def get_url(self, obj):
+    def get_edit_url(self, obj):
         request = self.context.get("request")
         if request is None:
             return None
         return reverse(
-            "api:products:product_detail", kwargs={"pk": obj.pk}, request=request
+            "api:products:product_update",
+            kwargs={"pk": obj.pk},
+            request=request,
         )
