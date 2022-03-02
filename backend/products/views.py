@@ -10,7 +10,7 @@ from rest_framework.generics import (
 
 from api.serializers import ProductSerializer
 from api.authentication import TokenAuthentication
-from products.permissions import IsStaffEditorPermissions
+from api.permissions import IsStaffEditorPermissions
 
 from .models import Product
 
