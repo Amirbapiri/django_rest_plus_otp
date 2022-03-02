@@ -11,6 +11,7 @@ from rest_framework.generics import (
 from api.serializers import ProductSerializer
 from api.authentication import TokenAuthentication
 from api.permissions import IsStaffEditorPermissions
+from api.mixins import StaffEditorPermissionMixin
 
 from .models import Product
 
@@ -43,10 +44,9 @@ class ProductListDetailView(
         return self.list(request, *args, **kwargs)
 
 
-class ProductListCreateAPIView(ListCreateAPIView):
+class ProductListCreateAPIView(StaffEditorPermissionMixin, ListCreateAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    permission_classes = [permissions.IsAdminUser, IsStaffEditorPermissions]
     authentication_classes = [
         authentication.SessionAuthentication,
         TokenAuthentication,
@@ -86,10 +86,9 @@ class ProductDetailAPIView(RetrieveAPIView):
         return qs
 
 
-class ProductUpdateAPIView(UpdateAPIView):
+class ProductUpdateAPIView(StaffEditorPermissionMixin, UpdateAPIView):
     serializer_class = ProductSerializer
     queryset = Product.objects.all()
-    permission_classes = [permissions.IsAdminUser, IsStaffEditorPermissions]
 
     def perform_update(self, serializer):
         instance = serializer.save()
@@ -99,10 +98,9 @@ class ProductUpdateAPIView(UpdateAPIView):
         return instance
 
 
-class ProductDeleteAPIView(DestroyAPIView):
+class ProductDeleteAPIView(StaffEditorPermissionMixin, DestroyAPIView):
     serializer_class = ProductSerializer
     queryset = Product.objects.all()
-    permission_classes = [permissions.IsAdminUser, IsStaffEditorPermissions]
 
     def perform_destory(self, instance):
         # Do whatever you want with the instance that is going to be removed.
