@@ -9,6 +9,7 @@ from rest_framework.generics import (
 )
 
 from api.serializers import ProductSerializer
+from api.authentication import TokenAuthentication
 from products.permissions import IsStaffEditorPermissions
 
 from .models import Product
@@ -48,7 +49,7 @@ class ProductListCreateAPIView(ListCreateAPIView):
     permission_classes = [permissions.IsAdminUser, IsStaffEditorPermissions]
     authentication_classes = [
         authentication.SessionAuthentication,
-        authentication.TokenAuthentication,
+        TokenAuthentication,
     ]
 
     def perform_create(self, serializer):
