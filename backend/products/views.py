@@ -1,4 +1,4 @@
-from rest_framework import permissions, authentication
+from rest_framework import authentication
 from rest_framework.generics import (
     RetrieveAPIView,
     ListCreateAPIView,
@@ -10,7 +10,6 @@ from rest_framework.generics import (
 
 from api.serializers import ProductSerializer
 from api.authentication import TokenAuthentication
-from api.permissions import IsStaffEditorPermissions
 from api.mixins import StaffEditorPermissionMixin
 
 from .models import Product
