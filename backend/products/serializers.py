@@ -50,6 +50,7 @@ class ProductSerializer(serializers.ModelSerializer):
             # "related_products",
             "title",
             # "name",
+            "is_public",
             "content",
             "price",
             "sale_price",
