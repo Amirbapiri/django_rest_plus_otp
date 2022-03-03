@@ -1,7 +1,18 @@
 from django.db import models
+from django.contrib.auth import get_user_model
+
+
+User = get_user_model()
 
 
 class Product(models.Model):
+    user = models.ForeignKey(
+        User,
+        default=1,
+        null=True,
+        related_name="products",
+        on_delete=models.SET_NULL,
+    )
     title = models.CharField(max_length=255, null=False, blank=False)
     content = models.TextField()
     price = models.DecimalField(max_digits=15, decimal_places=2, default=00.00)
