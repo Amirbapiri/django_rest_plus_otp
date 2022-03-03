@@ -2,6 +2,7 @@ from rest_framework import serializers, status
 from rest_framework.reverse import reverse
 
 from products.models import Product
+from products.validators import validate_title
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -11,6 +12,7 @@ class ProductSerializer(serializers.ModelSerializer):
         view_name="api:products:product_detail", lookup_field="pk"
     )
     # email = serializers.EmailField(write_only=True)
+    title = serializers.CharField(validators=[validate_title])
 
     class Meta:
         model = Product
@@ -46,11 +48,11 @@ class ProductSerializer(serializers.ModelSerializer):
     #     # Doing something with email
     #     return super().create(validated_data)
 
-    def validate_title(self, value):
-        qs = Product.objects.filter(title__iexact=value)
-        if qs.exists():
-            raise serializers.ValidationError(
-                detail=f"'{value}' is already a product title.",
-                code=status.HTTP_400_BAD_REQUEST,
-            )
-        return value
+    # def validate_title(self, value):
+    #     qs = Product.objects.filter(title__iexact=value)
+    #     if qs.exists():
+    #         raise serializers.ValidationError(
+    #             detail=f"'{value}' is already a product title.",
+    #             code=status.HTTP_400_BAD_REQUEST,
+    #         )
+    #     return value
