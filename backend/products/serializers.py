@@ -10,6 +10,7 @@ class ProductSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(
         view_name="api:products:product_detail", lookup_field="pk"
     )
+    email = serializers.EmailField(write_only=True)
 
     class Meta:
         model = Product
@@ -22,6 +23,7 @@ class ProductSerializer(serializers.ModelSerializer):
             "sale_price",
             "title_in_uppercase",
             "discount",
+            # "email",
         ]
 
     def get_discount(self, obj):
@@ -38,3 +40,8 @@ class ProductSerializer(serializers.ModelSerializer):
             kwargs={"pk": obj.pk},
             request=request,
         )
+
+    def create(self, validated_data):
+        email = validated_data.pop("email")
+        # Doing something with email
+        return super().create(validated_data)
