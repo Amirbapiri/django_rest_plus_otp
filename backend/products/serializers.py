@@ -10,8 +10,20 @@ from products.validators import (
 from api.serializers import UserPublicSerializer
 
 
+class ProductInlineSerializer(serializers.Serializer):
+    url = serializers.HyperlinkedIdentityField(
+        view_name="api:products:product_detail",
+        lookup_field="pk",
+        read_only=True,
+    )
+    title = serializers.CharField(read_only=True)
+
+
 class ProductSerializer(serializers.ModelSerializer):
     owner = UserPublicSerializer(source="user", read_only=True)
+    related_products = ProductInlineSerializer(
+        source="user.products.all", read_only=True, many=True
+    )
     discount = serializers.SerializerMethodField(read_only=True)
     edit_url = serializers.SerializerMethodField(read_only=True)
     url = serializers.HyperlinkedIdentityField(
@@ -35,6 +47,7 @@ class ProductSerializer(serializers.ModelSerializer):
             # "user",
             "owner",
             # "creator",
+            "related_products",
             "title",
             # "name",
             "content",
