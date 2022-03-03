@@ -21,9 +21,9 @@ class ProductInlineSerializer(serializers.Serializer):
 
 class ProductSerializer(serializers.ModelSerializer):
     owner = UserPublicSerializer(source="user", read_only=True)
-    related_products = ProductInlineSerializer(
-        source="user.products.all", read_only=True, many=True
-    )
+    # related_products = ProductInlineSerializer(
+    #     source="user.products.all", read_only=True, many=True
+    # )
     discount = serializers.SerializerMethodField(read_only=True)
     edit_url = serializers.SerializerMethodField(read_only=True)
     url = serializers.HyperlinkedIdentityField(
@@ -47,7 +47,7 @@ class ProductSerializer(serializers.ModelSerializer):
             # "user",
             "owner",
             # "creator",
-            "related_products",
+            # "related_products",
             "title",
             # "name",
             "content",
