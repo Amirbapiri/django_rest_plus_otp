@@ -53,5 +53,8 @@ class Product(models.Model):
         if self.price > 2222.00:
             return "Discount-LJ324"
 
+    def is_product_public(self) -> bool:
+        return self.is_public
+
     def __str__(self) -> str:
         return self.title
