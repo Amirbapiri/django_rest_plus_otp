@@ -52,6 +52,7 @@ class ProductListCreateAPIView(
         authentication.SessionAuthentication,
         TokenAuthentication,
     ]
+    ALLOW_STAFF_VIEW = False
 
     def perform_create(self, serializer):
         """
