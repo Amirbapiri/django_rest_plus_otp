@@ -107,7 +107,9 @@ class ProductUpdateAPIView(StaffEditorPermissionMixin, UpdateAPIView):
         return instance
 
 
-class ProductDeleteAPIView(StaffEditorPermissionMixin, DestroyAPIView):
+class ProductDeleteAPIView(
+    StaffEditorPermissionMixin, UserQuerysetMixin, DestroyAPIView
+):
     serializer_class = ProductSerializer
     queryset = Product.objects.all()
 
