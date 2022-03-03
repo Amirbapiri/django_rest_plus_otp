@@ -11,7 +11,7 @@ from api.serializers import UserPublicSerializer
 
 
 class ProductSerializer(serializers.ModelSerializer):
-    user = UserPublicSerializer(read_only=True)
+    owner = UserPublicSerializer(source="user", read_only=True)
     discount = serializers.SerializerMethodField(read_only=True)
     edit_url = serializers.SerializerMethodField(read_only=True)
     url = serializers.HyperlinkedIdentityField(
@@ -32,7 +32,8 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = [
             "url",
             "edit_url",
-            "user",
+            # "user",
+            "owner",
             # "creator",
             "title",
             # "name",
