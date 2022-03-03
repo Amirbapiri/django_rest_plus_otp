@@ -1,4 +1,4 @@
-from rest_framework import serializers
+from rest_framework import serializers, status
 from rest_framework.reverse import reverse
 
 from products.models import Product
@@ -45,3 +45,12 @@ class ProductSerializer(serializers.ModelSerializer):
     #     email = validated_data.pop("email")
     #     # Doing something with email
     #     return super().create(validated_data)
+
+    def validate_title(self, value):
+        qs = Product.objects.filter(title__iexact=value)
+        if qs.exists():
+            raise serializers.ValidationError(
+                detail=f"'{value}' is already a product title.",
+                code=status.HTTP_400_BAD_REQUEST,
+            )
+        return value
