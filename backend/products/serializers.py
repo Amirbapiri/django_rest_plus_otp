@@ -19,12 +19,14 @@ class ProductSerializer(serializers.ModelSerializer):
         ]
     )
     # name = serializers.CharField(source="title", read_only=True)
-
+    # creator = serializers.CharField(source="user.username", read_only=True)
     class Meta:
         model = Product
         fields = [
             "url",
             "edit_url",
+            "user",
+            # "creator",
             "title",
             # "name",
             "content",
