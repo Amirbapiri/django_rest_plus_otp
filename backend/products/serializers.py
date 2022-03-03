@@ -2,7 +2,11 @@ from rest_framework import serializers, status
 from rest_framework.reverse import reverse
 
 from products.models import Product
-from products.validators import validate_title, validate_title_no_junky_words
+from products.validators import (
+    validate_title,
+    validate_title_no_junky_words,
+    unique_product_validator,
+)
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -14,6 +18,7 @@ class ProductSerializer(serializers.ModelSerializer):
     # email = serializers.EmailField(write_only=True)
     title = serializers.CharField(
         validators=[
+            unique_product_validator,
             validate_title,
             validate_title_no_junky_words,
         ]
@@ -25,7 +30,7 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = [
             "url",
             "edit_url",
-            "user",
+            # "user",
             # "creator",
             "title",
             # "name",
