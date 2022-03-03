@@ -10,7 +10,7 @@ from rest_framework.generics import (
 
 from .serializers import ProductSerializer
 from api.authentication import TokenAuthentication
-from api.mixins import StaffEditorPermissionMixin
+from api.mixins import StaffEditorPermissionMixin, UserQuerysetMixin
 
 from .models import Product
 
@@ -43,7 +43,9 @@ class ProductListDetailView(
         return self.list(request, *args, **kwargs)
 
 
-class ProductListCreateAPIView(StaffEditorPermissionMixin, ListCreateAPIView):
+class ProductListCreateAPIView(
+    StaffEditorPermissionMixin, UserQuerysetMixin, ListCreateAPIView
+):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     authentication_classes = [
@@ -71,14 +73,15 @@ class ProductListCreateAPIView(StaffEditorPermissionMixin, ListCreateAPIView):
         content = serializer.validated_data.get("content")
         if content is None:
             content = title
-        serializer.save()
+        serializer.save(user=self.request.user)
 
-    def get_queryset(self, *args, **kwargs):
-        request = self.request
-        # if not request.user.is_authenticated:
-        #     return Product.objects.none()
-        qs = super().get_queryset(*args, **kwargs)
-        return qs.filter(user=request.user)
+    # def get_queryset(self, *args, **kwargs):
+    #     # We're going to create a mixin for code reduction here
+    #     request = self.request
+    #     # if not request.user.is_authenticated:
+    #     #     return Product.objects.none()
+    #     qs = super().get_queryset(*args, **kwargs)
+    #     return qs.filter(user=request.user)
 
 
 class ProductDetailAPIView(RetrieveAPIView):
