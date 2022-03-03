@@ -28,4 +28,6 @@ def validate_title_no_junky_words(value):
     return value
 
 
-unique_product_validator = UniqueValidator(queryset=Product.objects.all())
+unique_product_validator = UniqueValidator(
+    queryset=Product.objects.all(), lookup="iexact"
+)
