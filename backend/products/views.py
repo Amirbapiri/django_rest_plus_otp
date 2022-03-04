@@ -7,6 +7,7 @@ from rest_framework.generics import (
     mixins,
     GenericAPIView,
 )
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from .serializers import ProductSerializer
 from api.authentication import TokenAuthentication
@@ -51,6 +52,7 @@ class ProductListCreateAPIView(
     authentication_classes = [
         authentication.SessionAuthentication,
         TokenAuthentication,
+        JWTAuthentication,
     ]
     ALLOW_STAFF_VIEW = False
 
