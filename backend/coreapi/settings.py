@@ -40,11 +40,15 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    # Third parties
     "algoliasearch_django",
     "django_extensions",
+    # Django REST
     "rest_framework",
     "rest_framework.authtoken",
     "rest_framework_simplejwt",
+    # local apps
+    "accounts",
     "api",
     "products",
     "search",
