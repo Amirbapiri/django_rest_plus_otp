@@ -10,7 +10,7 @@ class UserManager(BaseUserManager):
         if not phone:
             raise ValueError("users must have a unique 'phone'.")
         user = self.model(username=username, phone=phone, **extra_fields)
-        user.password = make_password(password)
+        user.set_password(password)
         user.save(using=self._db)
         return user
 
