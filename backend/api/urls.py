@@ -7,6 +7,9 @@ from rest_framework_simplejwt.views import (
 )
 
 urlpatterns = [
+    # accounts OTP authentication
+    path("accounts/", include(("accounts.urls", "accounts"), namespace="accounts")),
+    # Token Authentication
     path("auth/", obtain_auth_token),
     # JWT authentication
     path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
