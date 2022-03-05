@@ -1,3 +1,5 @@
+import datetime
+
 from uuid import uuid4
 
 from django.db import models
@@ -28,3 +30,11 @@ class Otp(models.Model):
 
     def __str__(self):
         return f"{self.otp} -> ({self.user.username}, {self.user.phone})"
+
+    def is_expired(self):
+        current_time = datetime.datetime.now().astimezone()
+        time_to_keep_in_seconds = 300  ## 5 minutes
+        diff = current_time - self.created_at
+        if diff.seconds > time_to_keep_in_seconds:
+            return True
+        return False

@@ -41,12 +41,19 @@ class CreateTokenManually:
 class UserOTPLogin(views.APIView):
     permission_classes = [permissions.AllowAny]
 
+    def remove_expired_otp(self, otp):
+        pass
+
     def post(self, request, *args, **kwargs):
         phone = request.data.get("phone")
         if phone:
             user = get_object_or_404(get_user_model(), phone=phone)
             otp = user.otps.first()
             if otp:
+                if otp.is_expired():
+                    otp.delete()
+                    otp = otp_generator()
+                    Otp.objects.create(user=user, otp=otp)
                 send_otp(user.phone, otp)
                 return response.Response(
                     {"created": True},
