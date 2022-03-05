@@ -16,6 +16,7 @@ class Otp(models.Model):
         on_delete=models.CASCADE,
         related_name="otps",
     )
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.otp} -> ({self.user.username}, {self.user.phone})"
