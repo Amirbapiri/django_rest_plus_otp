@@ -47,13 +47,11 @@ class UserOTPLogin(views.APIView):
             user = get_object_or_404(get_user_model(), phone=phone)
             otp = user.otps.first()
             if otp:
-                # Token.token_type = "access"
-                # Token.lifetime = datetime.timedelta(hours=3)
-                # access_token = Token.for_user(user)
-                access_token = CreateTokenManually.access(user)
-                refresh_token = CreateTokenManually.refresh(user)
+                send_otp(user.phone, otp)
                 return response.Response(
-                    {"access": str(access_token), "refresh": str(refresh_token)}
+                    {"created": True},
+                    status=status.HTTP_201_CREATED,
+                    headers={"Location": reverse_lazy("api:accounts:verify")},
                 )
             # generate token and SMS to user
             otp = otp_generator()
