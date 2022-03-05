@@ -26,7 +26,6 @@ def otp_generator(size: int = 6) -> str:
 
 def send_otp(phone, otp):
     try:
-        print(os.getenv("KAVENEGAR_API_KEY"))
         api = KavenegarAPI(os.getenv("KAVENEGAR_API_KEY"))
         params = {
             "sender": "1000596446",  # optional
@@ -36,7 +35,6 @@ def send_otp(phone, otp):
             "message": f"Your OPT is: {otp}",
         }
         response = api.sms_send(params)
-        print(response)
     except APIException as e:
         print(e)
     except HTTPException as e:
