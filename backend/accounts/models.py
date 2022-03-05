@@ -39,8 +39,6 @@ class User(AbstractUser):
     email = None
     # add phone validator
     phone = models.CharField(max_length=11, unique=True, blank=False, null=False)
-    otp = models.PositiveIntegerField(blank=True, null=True)
-    otp_created_at = models.DateTimeField(auto_now=True)
 
     objects = UserManager()
 
