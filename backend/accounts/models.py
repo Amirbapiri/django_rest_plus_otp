@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.contrib.auth.hashers import make_password
 
+from accounts.utils import phone_validator
+
 
 class UserManager(BaseUserManager):
     def _create_user(self, username, phone, password=None, **extra_fields):
@@ -38,7 +40,13 @@ class UserManager(BaseUserManager):
 class User(AbstractUser):
     email = None
     # add phone validator
-    phone = models.CharField(max_length=11, unique=True, blank=False, null=False)
+    phone = models.CharField(
+        max_length=11,
+        unique=True,
+        blank=False,
+        null=False,
+        validators=[phone_validator],
+    )
 
     objects = UserManager()
 
