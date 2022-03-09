@@ -142,7 +142,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "accounts.User"
 
 AUTHENTICATION_BACKENDS = [
-    "accounts.backends.OTPBackend",
     "django.contrib.auth.backends.ModelBackend",
 ]
 
