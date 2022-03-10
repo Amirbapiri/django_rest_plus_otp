@@ -16,12 +16,17 @@ def generate_code(size: int = 6, chars=digits):
     return "".join(choice(chars) for _ in range(size))
 
 
+# def otp_generator(size: int = 6) -> str:
+#     code = generate_code(size)
+#     is_otp_exists = Otp.objects.filter(otp=code).exists()
+#     if not is_otp_exists:
+#         return code
+#     return otp_generator(size)
+
+
 def otp_generator(size: int = 6) -> str:
     code = generate_code(size)
-    is_otp_exists = Otp.objects.filter(otp=code).exists()
-    if not is_otp_exists:
-        return code
-    return otp_generator(size)
+    return code
 
 
 def send_otp(phone, otp):

@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
@@ -6,8 +6,8 @@ from django.urls import reverse_lazy
 
 from rest_framework import status, permissions, response
 from rest_framework import generics, views
-
 from rest_framework_simplejwt.tokens import Token
+from redis import Redis
 
 from otp.models import Otp
 from .serializers import UserRegistrationSerializer
@@ -41,10 +41,38 @@ class CreateTokenManually:
 class UserOTPLogin(views.APIView):
     permission_classes = [permissions.AllowAny]
 
+    REDIS_HOST = "localhost"
+    REDIS_PORT = 6379
+    REDIS_DB = 0
+    REDIS_HASH_NAME = "otp"
+
     def remove_expired_otp(self, otp):
         pass
 
     def post(self, request, *args, **kwargs):
+        user = get_object_or_404(get_user_model(), phone=request.data.get("phone"))
+        r = Redis(host=self.REDIS_HOST, port=self.REDIS_PORT, db=self.REDIS_DB)
+        if not r.hexists(user.phone, key="otp"):
+            otp = otp_generator()
+            result = r.hmset(
+                user.phone,
+                {"otp": otp},
+            )
+            if result:
+                # OTP must be expired after 3 minutes
+                r.expire(user.phone, time=180)
+                send_otp(user.phone, otp)
+                return response.Response(
+                    {"created": True},
+                    status=status.HTTP_201_CREATED,
+                    headers={"Location": reverse_lazy("api:accounts:verify")},
+                )
+        return response.Response(
+            data={"detail": "too many requests. OTP already exists"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    def post2(self, request, *args, **kwargs):
         phone = request.data.get("phone")
         if phone:
             user = get_object_or_404(get_user_model(), phone=phone)
