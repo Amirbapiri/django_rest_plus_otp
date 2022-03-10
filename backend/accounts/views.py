@@ -47,22 +47,29 @@ class UserOTPLogin(views.APIView):
     REDIS_DB = 0
     REDIS_HASH_NAME = "otp"
 
-    def remove_expired_otp(self, otp):
-        pass
+    def __init__(self):
+        self.client = Redis(
+            host=self.REDIS_HOST,
+            port=self.REDIS_PORT,
+            db=self.REDIS_DB,
+        )
+        return super().__init__()
+
+    def does_user_exists(self, phone):
+        user_exists = get_user_model().objects.filter(phone=phone).exists()
+        return user_exists
 
     def post(self, request, *args, **kwargs):
         phone = request.data.get("phone")
-        user_exists = get_user_model().objects.filter(phone=phone).exists()
-        if not user_exists:
+        if not self.does_user_exists(phone):
             return response.Response(
                 {"detail": f"No user found with phone: {phone}"},
                 status=status.HTTP_404_NOT_FOUND,
             )
-        r = Redis(host=self.REDIS_HOST, port=self.REDIS_PORT, db=self.REDIS_DB)
         otp = otp_generator()
         # example: 9011011100
         identifier = phone[1:]
-        with r.pipeline() as pipe:
+        with self.client.pipeline() as pipe:
             try:
                 pipe.watch(identifier)
                 if not pipe.exists(identifier):
