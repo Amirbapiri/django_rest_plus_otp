@@ -1,4 +1,4 @@
-from datetime import datetime
+import datetime
 from http.client import responses
 
 from django.shortcuts import get_object_or_404
@@ -53,7 +53,7 @@ class UserOTPLogin(views.APIView):
             port=self.REDIS_PORT,
             db=self.REDIS_DB,
         )
-        return super().__init__()
+        super().__init__()
 
     def does_user_exists(self, phone):
         user_exists = get_user_model().objects.filter(phone=phone).exists()
@@ -74,7 +74,8 @@ class UserOTPLogin(views.APIView):
                 pipe.watch(identifier)
                 if not pipe.exists(identifier):
                     pipe.multi()
-                    pipe.set(otp, value=otp, ex=180)
+                    pipe.hmset(otp, {"phone": phone})
+                    pipe.expire(otp, time=180)
                     pipe.hmset(identifier, {"status": 1})
                     pipe.expire(identifier, time=180)
                     pipe.execute()
@@ -94,16 +95,25 @@ class UserOTPLogin(views.APIView):
 
 class OTPverify(views.APIView):
     permission_classes = [permissions.AllowAny]
+    REDIS_HOST = "localhost"
+    REDIS_PORT = 6379
+    REDIS_DB = 0
+    REDIS_HASH_NAME = "otp"
+
+    def __init__(self, **kwargs):
+        self.client = Redis(
+            host=self.REDIS_HOST,
+            port=self.REDIS_PORT,
+            db=self.REDIS_DB,
+        )
+        super().__init__(**kwargs)
 
     def post(self, request, *args, **kwargs):
-        try:
-            otp = get_object_or_404(Otp, otp=request.data.get("otp"))
-            if otp:
-                access_token = CreateTokenManually.access(otp.user)
-                refresh_token = CreateTokenManually.refresh(otp.user)
-                return response.Response(
-                    {"access": str(access_token), "refresh": str(refresh_token)}
-                )
-            return response.Response({"detail": "Invalid token"})
-        except Otp.DoesNotExist:
-            return response.Response({"detail": "The code you've typed is invalid."})
+        phone = self.client.hget(request.data.get("otp"), "phone").decode()
+        user = get_object_or_404(get_user_model(), phone=phone)
+        access_token = CreateTokenManually.access(user)
+        refresh_token = CreateTokenManually.refresh(user)
+        print(access_token)
+        return response.Response(
+            {"access": str(access_token), "refresh": str(refresh_token)}
+        )
