@@ -1,4 +1,5 @@
 from datetime import datetime
+from http.client import responses
 
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
@@ -7,7 +8,7 @@ from django.urls import reverse_lazy
 from rest_framework import status, permissions, response
 from rest_framework import generics, views
 from rest_framework_simplejwt.tokens import Token
-from redis import Redis
+from redis import Redis, WatchError
 
 from otp.models import Otp
 from .serializers import UserRegistrationSerializer
@@ -52,51 +53,30 @@ class UserOTPLogin(views.APIView):
     def post(self, request, *args, **kwargs):
         user = get_object_or_404(get_user_model(), phone=request.data.get("phone"))
         r = Redis(host=self.REDIS_HOST, port=self.REDIS_PORT, db=self.REDIS_DB)
-        if not r.hexists(user.phone, key="otp"):
-            otp = otp_generator()
-            result = r.hmset(
-                user.phone,
-                {"otp": otp},
-            )
-            if result:
-                # OTP must be expired after 3 minutes
-                r.expire(user.phone, time=180)
-                send_otp(user.phone, otp)
+        otp = otp_generator()
+        # example: 9011011100
+        identifier = user.phone[1:]
+        with r.pipeline() as pipe:
+            try:
+                pipe.watch(identifier)
+                if not pipe.exists(identifier):
+                    pipe.multi()
+                    pipe.set(otp, value=otp, ex=180)
+                    pipe.hmset(identifier, {"status": 1})
+                    pipe.expire(identifier, time=180)
+                    pipe.execute()
+                    send_otp(user.phone, otp)
+                    return response.Response(
+                        {"created": True},
+                        status=status.HTTP_201_CREATED,
+                        headers={"Location": reverse_lazy("api:accounts:verify")},
+                    )
                 return response.Response(
-                    {"created": True},
-                    status=status.HTTP_201_CREATED,
-                    headers={"Location": reverse_lazy("api:accounts:verify")},
+                    {"detail": f"OTP already exists for {user.phone}"},
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
-        return response.Response(
-            data={"detail": "too many requests. OTP already exists"},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
-
-    def post2(self, request, *args, **kwargs):
-        phone = request.data.get("phone")
-        if phone:
-            user = get_object_or_404(get_user_model(), phone=phone)
-            otp = user.otps.first()
-            if otp:
-                if otp.is_expired():
-                    otp.delete()
-                    otp = otp_generator()
-                    Otp.objects.create(user=user, otp=otp)
-                send_otp(user.phone, otp)
-                return response.Response(
-                    {"created": True},
-                    status=status.HTTP_201_CREATED,
-                    headers={"Location": reverse_lazy("api:accounts:verify")},
-                )
-            # generate token and SMS to user
-            otp = otp_generator()
-            Otp.objects.create(user=user, otp=otp)
-            send_otp(user.phone, otp)
-            return response.Response(
-                {"created": True},
-                status=status.HTTP_201_CREATED,
-                headers={"Location": reverse_lazy("api:accounts:verify")},
-            )
+            finally:
+                pipe.reset()
 
 
 class OTPverify(views.APIView):
