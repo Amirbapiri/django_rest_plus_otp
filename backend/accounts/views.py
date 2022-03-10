@@ -51,11 +51,17 @@ class UserOTPLogin(views.APIView):
         pass
 
     def post(self, request, *args, **kwargs):
-        user = get_object_or_404(get_user_model(), phone=request.data.get("phone"))
+        phone = request.data.get("phone")
+        user_exists = get_user_model().objects.filter(phone=phone).exists()
+        if not user_exists:
+            return response.Response(
+                {"detail": f"No user found with phone: {phone}"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
         r = Redis(host=self.REDIS_HOST, port=self.REDIS_PORT, db=self.REDIS_DB)
         otp = otp_generator()
         # example: 9011011100
-        identifier = user.phone[1:]
+        identifier = phone[1:]
         with r.pipeline() as pipe:
             try:
                 pipe.watch(identifier)
@@ -65,14 +71,14 @@ class UserOTPLogin(views.APIView):
                     pipe.hmset(identifier, {"status": 1})
                     pipe.expire(identifier, time=180)
                     pipe.execute()
-                    send_otp(user.phone, otp)
+                    send_otp(phone, otp)
                     return response.Response(
                         {"created": True},
                         status=status.HTTP_201_CREATED,
                         headers={"Location": reverse_lazy("api:accounts:verify")},
                     )
                 return response.Response(
-                    {"detail": f"OTP already exists for {user.phone}"},
+                    {"detail": f"OTP already exists for {phone}"},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
             finally:
