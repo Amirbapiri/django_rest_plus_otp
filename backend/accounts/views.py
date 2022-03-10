@@ -1,4 +1,5 @@
 import datetime
+from enum import Enum
 from http.client import responses
 
 from django.shortcuts import get_object_or_404
@@ -25,6 +26,12 @@ class UserRegistrationView(generics.CreateAPIView):
         obj.save()
 
 
+class RedisData(Enum):
+    REDIS_HOST = "localhost"
+    REDIS_PORT = 6379
+    REDIS_DB = 0
+
+
 class CreateTokenManually:
     @classmethod
     def access(self, user):
@@ -42,16 +49,11 @@ class CreateTokenManually:
 class UserOTPLogin(views.APIView):
     permission_classes = [permissions.AllowAny]
 
-    REDIS_HOST = "localhost"
-    REDIS_PORT = 6379
-    REDIS_DB = 0
-    REDIS_HASH_NAME = "otp"
-
     def __init__(self):
         self.client = Redis(
-            host=self.REDIS_HOST,
-            port=self.REDIS_PORT,
-            db=self.REDIS_DB,
+            host=RedisData.REDIS_HOST.value,
+            port=RedisData.REDIS_PORT.value,
+            db=RedisData.REDIS_DB.value,
         )
         super().__init__()
 
@@ -95,25 +97,26 @@ class UserOTPLogin(views.APIView):
 
 class OTPverify(views.APIView):
     permission_classes = [permissions.AllowAny]
-    REDIS_HOST = "localhost"
-    REDIS_PORT = 6379
-    REDIS_DB = 0
-    REDIS_HASH_NAME = "otp"
 
-    def __init__(self, **kwargs):
+    def __init__(self):
         self.client = Redis(
-            host=self.REDIS_HOST,
-            port=self.REDIS_PORT,
-            db=self.REDIS_DB,
+            host=RedisData.REDIS_HOST.value,
+            port=RedisData.REDIS_PORT.value,
+            db=RedisData.REDIS_DB.value,
         )
-        super().__init__(**kwargs)
+        super().__init__()
 
     def post(self, request, *args, **kwargs):
-        phone = self.client.hget(request.data.get("otp"), "phone").decode()
+        try:
+            phone = self.client.hget(request.data.get("otp"), "phone").decode()
+        except AttributeError:
+            return response.Response(
+                {"detail": f"opt: {request.data.get('otp')} is valid"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
         user = get_object_or_404(get_user_model(), phone=phone)
         access_token = CreateTokenManually.access(user)
         refresh_token = CreateTokenManually.refresh(user)
-        print(access_token)
         return response.Response(
             {"access": str(access_token), "refresh": str(refresh_token)}
         )
